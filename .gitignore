@@ -1,0 +1,8 @@
+outputs/raw/
+outputs/merged/
+outputs/validated/
+outputs/enriched/
+.env
+__pycache__/
+*.pyc
+node_modules/
