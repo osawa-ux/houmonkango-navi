@@ -1,0 +1,53 @@
+# データソース定義
+# 訪問看護ステーションナビ
+
+mhlw:
+  name: "厚生労働省 介護サービス情報公表システム オープンデータ"
+  license: "CC BY 4.0"
+  attribution: "介護サービス情報公表システム（厚生労働省）のデータを基に作成"
+  urls:
+    jigyosho_130:
+      url: "https://www.mhlw.go.jp/content/12300000/jigyosho_130.csv"
+      description: "訪問看護（サービスコード130）"
+      format: "csv"
+      encoding: "utf-8-sig"
+      update_frequency: "年2回（6月末・12月末）"
+  target_prefecture: null  # null = 全国
+  output_dir: "data_sources/mhlw"
+
+kouseikyoku:
+  name: "関東信越厚生局"
+  base_url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/"
+  pages:
+    shitei_ichiran:
+      description: "指定訪問看護ステーションの指定一覧"
+      url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html"
+      fallback_urls:
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/shinsei/shitei/houmonkango.html"
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/"
+    todokede:
+      description: "訪問看護ステーションの基準の届出受理状況"
+      url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html"
+  target_prefectures:
+    - "茨城県"
+    - "栃木県"
+    - "群馬県"
+    - "埼玉県"
+    - "千葉県"
+    - "東京都"
+    - "神奈川県"
+    - "新潟県"
+    - "山梨県"
+    - "長野県"
+  mvp_prefecture: "神奈川県"
+  output_dir: "data_sources/kouseikyoku"
+
+# 将来拡張用
+google_places:
+  enabled: false
+  api_key_env: "GOOGLE_PLACES_API_KEY"
+
+geocoding:
+  enabled: false
+  provider: "google"  # or "yahoo_japan"
+  api_key_env: "GEOCODING_API_KEY"

@@ -1,0 +1,51 @@
+# 出力スキーマ定義
+
+stations_master:
+  description: "訪問看護ステーション 母集団データ"
+  primary_key: "station_id"
+  fields:
+    - {name: station_id, type: string, required: true}
+    - {name: name, type: string, required: true}
+    - {name: name_kana, type: string, required: false}
+    - {name: prefecture, type: string, required: true}
+    - {name: city, type: string, required: true}
+    - {name: address, type: string, required: true}
+    - {name: postal_code, type: string, required: false, format: "NNN-NNNN"}
+    - {name: tel, type: string, required: false, format: "NNN-NNNN-NNNN"}
+    - {name: fax, type: string, required: false}
+    - {name: corporation_name, type: string, required: false}
+    - {name: office_code, type: string, required: true}
+    - {name: latitude, type: float, required: false}
+    - {name: longitude, type: float, required: false}
+    - {name: website_url, type: string, required: false}
+    - {name: source_primary, type: string, required: true}
+    - {name: source_url, type: string, required: false}
+    - {name: source_updated_at, type: string, required: false}
+    - {name: is_active, type: boolean, required: true, default: true}
+
+stations_features:
+  description: "訪問看護ステーション 加算・届出情報"
+  foreign_key: "station_id -> stations_master.station_id"
+  fields:
+    - {name: station_id, type: string, required: true}
+    - {name: supports_24h, type: boolean, required: false}
+    - {name: psychiatric_visit_nursing, type: boolean, required: false}
+    - {name: special_management_addition, type: boolean, required: false}
+    - {name: specialized_training_nurse, type: boolean, required: false}
+    - {name: function_strengthening_type, type: string, required: false}
+    - {name: medical_dx_addition, type: boolean, required: false}
+    - {name: base_up_eval, type: boolean, required: false}
+    - {name: remarks_raw, type: string, required: false}
+
+normalization_rules:
+  prefecture: "正式表記（都道府県付き）"
+  zenkaku_to_hankaku: true
+  tel_format: "ハイフン付き NNN-NNNN-NNNN"
+  postal_format: "NNN-NNNN"
+  address_split: ["prefecture", "city", "street"]
+
+dedup_rules:
+  - {priority: 1, method: "office_code exact match"}
+  - {priority: 2, method: "normalized_name + normalized_address"}
+  - {priority: 3, method: "name + tel"}
+  - {priority: 4, method: "fuzzy -> review_candidates (no auto-merge)"}
