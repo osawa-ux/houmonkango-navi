@@ -19,7 +19,7 @@ GitHub Pages + Cloudflare カスタムドメイン設定 CLI
 オプション環境変数:
   GITHUB_OWNER   default: osawa-ux
   GITHUB_REPO    default: houmonkango-navi
-  CUSTOM_DOMAIN  default: kango.zaitakuclinic-navi.com
+  CUSTOM_DOMAIN  default: kango.zaitaku-navi.com
   CNAME_TARGET   default: osawa-ux.github.io
   CF_RECORD_NAME default: kango
 """
@@ -33,7 +33,7 @@ sys.stderr.reconfigure(encoding='utf-8')
 # --- 設定 ---
 OWNER = os.environ.get('GITHUB_OWNER', 'osawa-ux')
 REPO = os.environ.get('GITHUB_REPO', 'houmonkango-navi')
-DOMAIN = os.environ.get('CUSTOM_DOMAIN', 'kango.zaitakuclinic-navi.com')
+DOMAIN = os.environ.get('CUSTOM_DOMAIN', 'kango.zaitaku-navi.com')
 CNAME_TARGET = os.environ.get('CNAME_TARGET', 'osawa-ux.github.io')
 CF_RECORD = os.environ.get('CF_RECORD_NAME', 'kango')
 

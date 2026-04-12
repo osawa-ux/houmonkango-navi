@@ -1,6 +1,6 @@
 # カスタムドメイン公開手順
 
-`kango.zaitakuclinic-navi.com` を GitHub Pages + Cloudflare で公開するための手順。
+`kango.zaitaku-navi.com` を GitHub Pages + Cloudflare で公開するための手順。
 
 ## 必要なトークン
 
@@ -8,7 +8,10 @@
 |---------|---------|-----------|
 | `GITHUB_TOKEN` | GitHub Settings → Developer settings → Fine-grained PAT | Pages: write + Administration: write |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens | Zone.DNS Edit |
-| `CLOUDFLARE_ZONE_ID` | Cloudflare → zaitakuclinic-navi.com → Overview → API セクション | — |
+| `CLOUDFLARE_ZONE_ID` | Cloudflare → **zaitaku-navi.com** → Overview → API セクション | — |
+
+> **重要**: `zaitakuclinic-navi.com`（訪問診療本体）と `zaitaku-navi.com`（新親ドメイン）は**別ゾーン**です。
+> 訪問看護ナビでは必ず `zaitaku-navi.com` の Zone ID を使ってください。
 
 ## セットアップ
 
@@ -40,7 +43,7 @@ python scripts/setup_custom_domain.py apply
 
 これにより:
 - Cloudflare に `kango` CNAME → `osawa-ux.github.io` (DNS only) が作成/更新される
-- GitHub Pages の cname が `kango.zaitakuclinic-navi.com` に設定される
+- GitHub Pages の cname が `kango.zaitaku-navi.com` に設定される
 
 ### 4. 確認
 
