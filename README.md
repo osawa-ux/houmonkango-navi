@@ -1,6 +1,65 @@
 # 訪問看護ステーションナビ
 
-全国の訪問看護ステーション検索ポータルサイトのデータ収集基盤。
+全国の訪問看護ステーション検索ポータル。
+
+- 公開URL: **https://kango.zaitaku-navi.com/**
+- 公開リポジトリ: `osawa-ux/houmonkango-navi`（public）
+- データ件数: **17,958件 / 47都道府県**
+- ホスティング: GitHub Pages + Cloudflare DNS
+- ビルド: `~/projects/MyPython/build_site.py --config site_config_houmon_kango.json`
+
+## 公開状況（2026-04-12）
+
+| 項目 | 状態 |
+|------|------|
+| ドメイン取得 (Namecheap) | ✓ zaitaku-navi.com |
+| Cloudflare zone | ✓ active (`d2ee309f0a2fb373a09f0deb6669d7a2`) |
+| Cloudflare CNAME | ✓ kango → osawa-ux.github.io |
+| GitHub Pages | ✓ gh-pages ブランチ / built / built |
+| SSL証明書 | ✓ Let's Encrypt approved |
+| HTTPS強制 | ✓ enforced |
+| Formspree (contact) | ✓ `xzdknkvw` |
+| Formspree (premium) | ✓ `xpqovoja` |
+| GA4 測定ID | ⏳ 未設定 |
+| Search Console | ⏳ 未登録 |
+
+## デプロイ運用
+
+### gh-pages worktree 方式（master を汚さない）
+
+```bash
+# 初回のみ
+cd ~/projects/houmonkango-navi
+git fetch origin
+git worktree add --orphan -B gh-pages /tmp/houmonkango-gh-pages
+
+# 再デプロイ
+cd ~/projects/MyPython
+python build_site.py --config site_config_houmon_kango.json
+cd /tmp/houmonkango-gh-pages
+find . -mindepth 1 -not -path './.git*' -delete
+cp -a ~/projects/MyPython/site_kango/. .
+git add -A
+git commit -m "Update site (YYYY-MM-DD)"
+git push origin gh-pages
+```
+
+詳細は [docs/custom-domain-deploy.md](docs/custom-domain-deploy.md) を参照。
+
+### カスタムドメイン設定 CLI
+
+`scripts/setup_custom_domain.py` で Cloudflare DNS と GitHub Pages の設定を半自動化。
+
+```bash
+python scripts/setup_custom_domain.py plan
+python scripts/setup_custom_domain.py apply
+python scripts/setup_custom_domain.py verify
+python scripts/setup_custom_domain.py enable-https
+```
+
+---
+
+## データ収集パイプライン
 
 ## セットアップ
 
