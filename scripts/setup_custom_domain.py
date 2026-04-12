@@ -12,7 +12,7 @@ GitHub Pages + Cloudflare カスタムドメイン設定 CLI
   --dry-run     apply 時に実際の変更を行わない
 
 必須環境変数:
-  GITHUB_TOKEN          GitHub PAT (repo scope)
+  GITHUB_TOKEN          GitHub Fine-grained PAT (Pages: write, Administration: write)
   CLOUDFLARE_API_TOKEN  Cloudflare API Token (Zone.DNS edit)
   CLOUDFLARE_ZONE_ID    Cloudflare Zone ID
 

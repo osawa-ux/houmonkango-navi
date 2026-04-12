@@ -6,7 +6,7 @@
 
 | トークン | 取得場所 | 必要な権限 |
 |---------|---------|-----------|
-| `GITHUB_TOKEN` | GitHub Settings → Developer settings → PAT (classic) | `repo` scope |
+| `GITHUB_TOKEN` | GitHub Settings → Developer settings → Fine-grained PAT | Pages: write + Administration: write |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens | Zone.DNS Edit |
 | `CLOUDFLARE_ZONE_ID` | Cloudflare → zaitakuclinic-navi.com → Overview → API セクション | — |
 
