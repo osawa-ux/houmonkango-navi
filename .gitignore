@@ -4,6 +4,7 @@ data_sources/kouseikyoku/
 data_sources/processed/
 data_sources/exports/
 .env
+!.env.example
 __pycache__/
 *.pyc
 node_modules/
