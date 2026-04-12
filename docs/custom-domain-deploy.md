@@ -64,23 +64,58 @@ python scripts/setup_custom_domain.py enable-https
 **注意**: 証明書の発行には DNS 反映後 5〜30分かかることがある。
 `verify` で `certificate.state` が `authorized` になるまで待つ。
 
-## 前提: gh-pages ブランチへのデプロイ
+## 前提: gh-pages ブランチへのデプロイ（worktree 方式・推奨）
 
 `apply` の前に、`site_kango/` の中身を `gh-pages` ブランチに push しておく必要がある。
 
+**worktree 方式を推奨**。master の作業ツリーに一切触れず、別ディレクトリで gh-pages を操作できるため安全。`git checkout --orphan` 方式は master のファイルを一旦削除する必要があり、中断時のリスクが高いので避ける。
+
+### 初回デプロイ
+
 ```bash
-# MyPython リポジトリで site_kango/ をビルド済みの状態で:
 cd ~/projects/houmonkango-navi
-git checkout --orphan gh-pages
-git rm -rf .
-cp -r ~/projects/MyPython/site_kango/* .
+git fetch origin
+
+# gh-pages を orphan ブランチとして worktree で作成
+git worktree add --orphan -B gh-pages /tmp/houmonkango-gh-pages
+
+# site_kango の中身を worktree にコピー（.nojekyll / CNAME 含む）
+cd ~/projects/MyPython/site_kango
+cp -a . /tmp/houmonkango-gh-pages/
+
+# コミット＆push
+cd /tmp/houmonkango-gh-pages
 git add -A
-git commit -m "Deploy site"
-git push origin gh-pages
-git checkout master
+git commit -m "Initial deploy: kango.zaitaku-navi.com (17,958 stations)"
+git push -u origin gh-pages
 ```
 
-または ghpages 用のデプロイスクリプトを別途作成してもよい。
+### 2回目以降の再デプロイ
+
+worktree を残しておけば、差分反映だけで済む。
+
+```bash
+# MyPython 側で再ビルド
+cd ~/projects/MyPython
+python build_site.py --config site_config_houmon_kango.json
+
+# worktree に差分コピー（古いファイル削除のため --delete 相当が欲しい）
+cd /tmp/houmonkango-gh-pages
+# 一度全削除してから再コピー（.git はそのまま）
+find . -mindepth 1 -not -path './.git*' -delete
+cp -a ~/projects/MyPython/site_kango/. .
+
+git add -A
+git commit -m "Update site (YYYY-MM-DD)"
+git push origin gh-pages
+```
+
+### 注意点
+
+- worktree 先は `/tmp` など repo 外。repo 内には置かない
+- `.git` ディレクトリはコピーしない（`cp -a .` で site_kango 配下のみ）
+- `.nojekyll` と `CNAME` は build_site.py が自動生成するため、site_kango に既に含まれている
+- master ブランチには一切影響しない（確認: `git status` on master）
 
 ## トラブルシュート
 
