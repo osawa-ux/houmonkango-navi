@@ -66,7 +66,10 @@ def _req(url, method='GET', data=None, headers=None, token=None, token_type='Bea
     req = Request(url, data=body, headers=hdrs, method=method)
     try:
         with urlopen(req) as resp:
-            return resp.status, json.loads(resp.read().decode())
+            body = resp.read().decode()
+            if not body.strip():
+                return resp.status, {}
+            return resp.status, json.loads(body)
     except HTTPError as e:
         body_text = e.read().decode() if e.fp else ''
         try:
@@ -237,7 +240,7 @@ def gh_enable_https():
     https_status = pages.get('https_certificate', {}).get('state', 'unknown')
     print(f'  証明書状態: {https_status}')
 
-    if https_status not in ('authorized', 'issued'):
+    if https_status not in ('authorized', 'issued', 'approved'):
         print(f'  ⚠ 証明書がまだ準備できていません (state={https_status})。')
         print('  しばらく待ってから再実行してください。')
         return False
