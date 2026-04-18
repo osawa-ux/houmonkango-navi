@@ -21,7 +21,7 @@
 | Formspree (contact) | ✓ `xzdknkvw` |
 | Formspree (premium) | ✓ `xpqovoja` |
 | GA4 測定ID | ⏳ 未設定 |
-| Search Console | ⏳ 未登録 |
+| Search Console | ✓ sc-domain:zaitaku-navi.com (siteOwner) |
 
 ## デプロイ運用
 
