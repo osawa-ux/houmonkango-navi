@@ -6,7 +6,10 @@
 
 repo: `houmonkango-navi`
 project: `kango`
-domain: 訪問看護ステーション検索ポータル（神奈川MVP → 全国展開予定）
+domain: 訪問看護ステーション検索ポータル
+- 公開サイト: kango.zaitaku-navi.com で全国 17,958件掲載済み（厚労省CSV直変換、MyPython/build_site.py で生成）
+- rich pipeline: 本 repo の scripts/ が神奈川 1,234件の feature 付き JSON を出力
+- 接続: MyPython/convert_kango_data.py に overlay 経路あり。現状 supports_24h のみが公開系に反映
 姉妹サイト: `houmonshinsatsu-navi` (clinic) と相互リンク・共通基盤化を予定
 
 ---

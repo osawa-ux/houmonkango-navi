@@ -8,6 +8,31 @@
 - ホスティング: GitHub Pages + Cloudflare DNS
 - ビルド: `~/projects/MyPython/build_site.py --config site_config_houmon_kango.json`
 
+## アーキテクチャ概要
+
+公開系と rich データパイプラインは意図的に別 repo 分離されている。
+
+```
+[このrepo] houmonkango-navi                [別repo] MyPython
+  データ収集・正規化パイプライン              公開サイト生成
+  ├ scripts/fetch_*, parse_*, normalize_*     ├ build_site.py
+  ├ scripts/merge_stations.py                 ├ site_config_houmon_kango.json
+  ├ scripts/export_site_data.py               ├ convert_kango_data.py
+  └ data_sources/exports/                     └ site_kango/ (ビルド出力)
+     └ kanagawa_*.json (神奈川MVP 1,234件)
+                                                     │
+                                                     ▼ gh-pages push
+                                              kango.zaitaku-navi.com
+                                              (全国 17,958件, MHLW直変換)
+```
+
+**現在の接続状況（2026-04-18）**
+
+- **公開サイト**: MyPython/convert_kango_data.py が厚労省CSVから直接生成（17,958件・全国）。これがメイン経路
+- **本 repo の rich pipeline**: 神奈川 1,234件の richer JSON を data_sources/exports/ に出力
+- **接続**: convert_kango_data.py に overlay 経路を実装。現状 `supports_24h` のみが公開系に反映されている（神奈川927件の 24時間訪問看護 バッジ）
+- **残り feature**（精神科訪問・特別管理・専門研修看護師・機能強化型・医療DX・ベースアップ）: データ自体は exports/ にあるが、overlay・表示未実装
+
 ## 公開状況（2026-04-12）
 
 | 項目 | 状態 |
@@ -128,7 +153,8 @@ config/            # ソースURL・スキーマ定義
 
 ## 現時点の制約
 
-- 対象は神奈川県のみ（全国展開は構造的に対応済み）
+- 公開サイトは全国 17,958件掲載済み（厚労省CSV直変換）
+- 本 repo の rich pipeline は神奈川 1,234件分のみ完成（feature充填あり）。他46都道府県は厚労省CSV由来の基本項目のみ
 - 厚労省CSVは年2回更新（6月末・12月末時点）のため最大6ヶ月のラグ
 - 厚生局データはPDF版のみの都県あり（Excel ZIP展開で対応済み）
 - 郵便番号は厚生局データからの補完（厚労省CSVに含まれない）
