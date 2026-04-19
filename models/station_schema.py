@@ -45,7 +45,7 @@ class StationFeatures(BaseModel):
     psychiatric_visit_nursing: Optional[bool] = Field(default=None, description="精神科訪問看護基本療養費")
     special_management_addition: Optional[bool] = Field(default=None, description="特別管理加算")
     specialized_training_nurse: Optional[bool] = Field(default=None, description="専門の研修を受けた看護師")
-    function_strengthening_type: Optional[str] = Field(default=None, description="機能強化型 (1/2/3/なし)")
+    function_strengthening_type: Optional[bool] = Field(default=None, description="機能強化型訪問看護管理療養費 (有/無)。1/2/3のtype区別は厚生局公開データに含まれないためboolean保持。")
     medical_dx_addition: Optional[bool] = Field(default=None, description="訪問看護医療DX情報活用加算")
     base_up_eval: Optional[bool] = Field(default=None, description="ベースアップ評価料")
     remarks_raw: Optional[str] = Field(default=None, description="備考（生テキスト）")

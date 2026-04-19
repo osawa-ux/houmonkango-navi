@@ -100,12 +100,10 @@ def parse_juri_codes(juri_text: str) -> dict:
     for code, field in JURI_CODE_MAP.items():
         code_han = zen_to_han(code)
         if code_han in text or code in text:
-            if field == "function_strengthening_type":
-                # 機能強化型の番号を抽出（訪看30の後の数字）
-                m = re.search(r"訪看30.*?第\s*(\d+)", text)
-                features[field] = m.group(1) if m else "有"
-            else:
-                features[field] = True
+            # 訪看30 含む全コード共通: 受理あり = True
+            # 旧版は「訪看30 第N号」の N を type 1/2/3 と誤認していたが、
+            # 実際には N は受理連番で type 情報ではない（厚生局公開データに 1/2/3 区別は無い）
+            features[field] = True
 
     return features
 
