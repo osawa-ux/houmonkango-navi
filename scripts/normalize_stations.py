@@ -145,7 +145,8 @@ def normalize_corp_name(name: str) -> str:
 def process(target_pref: str = TARGET_PREFECTURE) -> dict:
     """厚労省CSVを読み込み、正規化して出力"""
     print(f"[normalize] 入力: {INPUT_PATH}")
-    df = pd.read_csv(INPUT_PATH, encoding="utf-8-sig", low_memory=False)
+    # 全カラムを文字列で読む（事業所番号のゼロパディング維持のため）
+    df = pd.read_csv(INPUT_PATH, encoding="utf-8-sig", low_memory=False, dtype=str)
     cols = list(df.columns)
     total = len(df)
     print(f"[normalize] 全国件数: {total:,}件")
@@ -168,9 +169,11 @@ def process(target_pref: str = TARGET_PREFECTURE) -> dict:
 
         tel = normalize_tel(str(row[cols[11]])) if pd.notna(row[cols[11]]) else None
         fax = normalize_tel(str(row[cols[12]])) if pd.notna(row[cols[12]]) else None
-        office_code = str(int(row[cols[15]])) if pd.notna(row[cols[15]]) else str(row[cols[15]])
-        # office_codeが浮動小数点の場合の対処
+        # 事業所番号は文字列で読み込み済み。10桁未満ならゼロパディング（北海道01・東北02-07・茨城08・栃木09 対策）
+        office_code = str(row[cols[15]]).strip() if pd.notna(row[cols[15]]) else ""
         office_code = office_code.replace(".0", "")
+        if office_code.isdigit() and len(office_code) < 10:
+            office_code = office_code.zfill(10)
 
         corp_name = str(row[cols[14]]) if pd.notna(row[cols[14]]) else None
         raw_corp = corp_name
