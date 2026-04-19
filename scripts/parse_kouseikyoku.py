@@ -19,6 +19,9 @@
   訪ベⅠ１ = ベースアップ評価料
 """
 
+import argparse
+import sys
+import yaml
 import pandas as pd
 import unicodedata
 import os
@@ -29,6 +32,9 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INPUT_DIR = os.path.join(BASE_DIR, "data_sources", "kouseikyoku")
 OUTPUT_DIR = os.path.join(BASE_DIR, "data_sources", "processed")
+CONFIG_PATH = os.path.join(BASE_DIR, "config", "sources.yaml")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pref_meta import get_pref_meta
 
 # 受理番号コード → feature フィールドのマッピング
 JURI_CODE_MAP = {
@@ -51,41 +57,38 @@ def zen_to_han(text: str) -> str:
     return unicodedata.normalize("NFKC", text)
 
 
-def find_kanagawa_todokede_excel() -> str:
-    """神奈川県の届出受理名簿Excelを探す"""
-    patterns = [
-        os.path.join(INPUT_DIR, "raw_14*届出*神奈川*.xlsx"),
-        os.path.join(INPUT_DIR, "raw_14*受理*神奈川*.xlsx"),
-        os.path.join(INPUT_DIR, "raw_14*kijun*.xlsx"),
-    ]
-    for pat in patterns:
-        files = glob.glob(pat)
-        if files:
-            return files[0]
-
-    # パターンマッチで見つからない場合、14で始まる大きいxlsxを探す
-    all_14 = glob.glob(os.path.join(INPUT_DIR, "raw_14*.xlsx"))
-    if all_14:
-        # 大きい方が届出受理（feature情報が多い）
-        return max(all_14, key=os.path.getsize)
-    return None
+def _load_bureau_patterns(bureau: str) -> dict:
+    """config/sources.yaml から bureau の excel_file_patterns を取得"""
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    return cfg["kouseikyoku"]["bureaus"][bureau]["excel_file_patterns"]
 
 
-def find_kanagawa_shitei_excel() -> str:
-    """神奈川県の指定一覧Excelを探す"""
-    patterns = [
-        os.path.join(INPUT_DIR, "raw_14*コード*神奈川*.xlsx"),
-        os.path.join(INPUT_DIR, "raw_14*一覧*神奈川*.xlsx"),
-        os.path.join(INPUT_DIR, "raw_14*shitei*.xlsx"),
-    ]
-    for pat in patterns:
-        files = glob.glob(pat)
-        if files:
-            return files[0]
+def find_pref_excel(pref_jp: str, kind: str) -> str:
+    """指定 pref / kind (todokede/shitei) の Excel を探す。
+    config/sources.yaml の bureau.excel_file_patterns に従って glob する。"""
+    meta = get_pref_meta(pref_jp)
+    bureau = meta["bureau"]
+    patterns = _load_bureau_patterns(bureau)
+    pattern_tpl = patterns.get(kind)
+    if not pattern_tpl:
+        return None
 
-    all_14 = glob.glob(os.path.join(INPUT_DIR, "raw_14*.xlsx"))
-    if all_14:
-        return min(all_14, key=os.path.getsize)
+    pref_jp_short = pref_jp.replace("県", "").replace("府", "").replace("都", "").replace("道", "")
+    pattern = pattern_tpl.format(
+        pref_code=meta["code"],
+        pref_jp=pref_jp_short,
+        pref_romaji=meta["romaji"],
+    )
+    files = glob.glob(os.path.join(INPUT_DIR, pattern))
+    if files:
+        # 届出受理は feature 情報量が多い = 大きいファイル
+        return max(files, key=os.path.getsize) if kind == "todokede" else min(files, key=os.path.getsize)
+
+    # フォールバック: pref_code prefix で全 xlsx を探し、サイズで大小を選ぶ
+    fallback = glob.glob(os.path.join(INPUT_DIR, f"raw_{meta['code']}*.xlsx"))
+    if fallback:
+        return max(fallback, key=os.path.getsize) if kind == "todokede" else min(fallback, key=os.path.getsize)
     return None
 
 
@@ -217,13 +220,13 @@ def parse_todokede_excel(filepath: str) -> list:
     return records
 
 
-def process() -> dict:
+def process(target_pref: str = "神奈川県") -> dict:
     """厚生局データパースのメインフロー"""
-    print("[parse_kousei] === 厚生局データパース開始 ===")
+    print(f"[parse_kousei] === 厚生局データパース開始 (pref={target_pref}) ===")
 
     # 届出受理名簿を優先（feature情報が豊富）
-    todokede_file = find_kanagawa_todokede_excel()
-    shitei_file = find_kanagawa_shitei_excel()
+    todokede_file = find_pref_excel(target_pref, "todokede")
+    shitei_file = find_pref_excel(target_pref, "shitei")
 
     print(f"[parse_kousei] 届出受理: {os.path.basename(todokede_file) if todokede_file else 'なし'}")
     print(f"[parse_kousei] 指定一覧: {os.path.basename(shitei_file) if shitei_file else 'なし'}")
@@ -261,9 +264,10 @@ def process() -> dict:
                 true_count = (result_df[col] == True).sum() if result_df[col].dtype == bool else result_df[col].notna().sum()
                 print(f"  {col}: {true_count}/{len(result_df)} ({true_count/len(result_df)*100:.1f}%)")
 
-    # 出力
+    # 出力（pref_romaji でファイル名分離）
+    pref_romaji = get_pref_meta(target_pref)["romaji"]
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    output_path = os.path.join(OUTPUT_DIR, "kouseikyoku_features.csv")
+    output_path = os.path.join(OUTPUT_DIR, f"kouseikyoku_features_{pref_romaji}.csv")
     result_df.to_csv(output_path, index=False, encoding="utf-8-sig")
     print(f"\n[parse_kousei] 出力: {output_path} ({len(result_df):,}件)")
 
@@ -275,7 +279,10 @@ def process() -> dict:
 
 
 def main():
-    result = process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pref", default="神奈川県", help="対象都道府県名 (例: 福井県)")
+    args = parser.parse_args()
+    result = process(target_pref=args.pref)
     print(f"[parse_kousei] 完了: {result['status']}, {result['output_count']}件")
 
 

@@ -1,16 +1,22 @@
 """
-関東信越厚生局 訪問看護ステーション関連データの取得
+地方厚生局 訪問看護ステーション関連データの取得
 
 対象:
 - 指定訪問看護ステーションの指定一覧
 - 訪問看護ステーションの基準の届出受理状況
 
 取得戦略:
-1. 厚生局のページからExcel/ZIP/PDFリンクを探索
-2. ダウンロード可能なファイルを保存
-3. ファイル形式に応じてparse_kouseikyoku.pyで処理
+1. config/sources.yaml の bureau 定義から探索ページ一覧を読む
+2. 各ページから訪問看護関連のExcel/ZIP/PDFリンクを収集
+3. ダウンロード可能なファイルを保存
+4. ファイル形式に応じてparse_kouseikyoku.pyで処理
+
+CLI:
+  python fetch_kouseikyoku.py                    # default: kantoshinetsu
+  python fetch_kouseikyoku.py --bureau kinki     # 近畿厚生局
 """
 
+import argparse
 import requests
 import hashlib
 import json
@@ -19,27 +25,33 @@ import sys
 import re
 import zipfile
 import io
+import yaml
 from datetime import datetime
 from bs4 import BeautifulSoup
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_DIR = os.path.join(BASE_DIR, "data_sources", "kouseikyoku")
 AUDIT_DIR = os.path.join(BASE_DIR, "data_sources", "processed")
+CONFIG_PATH = os.path.join(BASE_DIR, "config", "sources.yaml")
 
-SOURCE_NAME = "kouseikyoku_kanto"
+# bureau ごとに切替（CLI 引数 / config から決定）
+SOURCE_NAME = "kouseikyoku_kanto"  # 後で main() で上書き
 BASE_URL = "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/"
-
-# 探索するページ一覧（優先度順）
-SEARCH_PAGES = [
-    "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html",
-    "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/shinsei/shitei/houmonkango.html",
-    "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/index.html",
-    "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/shitei_jokyo.html",
-]
+SEARCH_PAGES = []
 
 # 訪問看護関連キーワード
 KEYWORDS = ["訪問看護", "houmon", "指定一覧", "届出受理", "ステーション"]
 FILE_EXTENSIONS = [".xlsx", ".xls", ".zip", ".pdf", ".csv"]
+
+
+def load_bureau_config(bureau: str) -> dict:
+    """config/sources.yaml から指定 bureau の設定を読む"""
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+    bureaus = config.get("kouseikyoku", {}).get("bureaus", {})
+    if bureau not in bureaus:
+        raise ValueError(f"bureau '{bureau}' が config/sources.yaml に未定義。利用可能: {list(bureaus.keys())}")
+    return bureaus[bureau]
 
 HEADERS = {
     "User-Agent": "HoumonkangoNavi-DataCollector/1.0 (MDX Inc.; contact: osawa@yokohama-home.jp)"
@@ -169,11 +181,14 @@ def download_file(url: str, output_dir: str) -> dict:
             f.write(content)
         print(f"[fetch_kousei]   ZIP保存: {zip_path}")
 
-        # ZIP内のファイルも展開
+        # ZIP内のファイルも展開（ネストしたディレクトリ構造はフラット化）
         try:
             with zipfile.ZipFile(io.BytesIO(content)) as zf:
                 for name in zf.namelist():
-                    extract_path = os.path.join(output_dir, f"raw_{name}")
+                    if name.endswith("/"):
+                        continue  # ディレクトリエントリはスキップ
+                    flat_name = "raw_" + os.path.basename(name)
+                    extract_path = os.path.join(output_dir, flat_name)
                     with zf.open(name) as src, open(extract_path, "wb") as dst:
                         dst.write(src.read())
                     print(f"[fetch_kousei]   展開: {extract_path}")
@@ -246,6 +261,18 @@ def fetch() -> list:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="厚生局データ取得")
+    parser.add_argument("--bureau", default="kantoshinetsu",
+                        help="対象厚生局 (config/sources.yaml の kouseikyoku.bureaus キー)")
+    args = parser.parse_args()
+
+    global SOURCE_NAME, BASE_URL, SEARCH_PAGES
+    cfg = load_bureau_config(args.bureau)
+    SOURCE_NAME = cfg["source_name"]
+    BASE_URL = cfg["base_url"]
+    SEARCH_PAGES = cfg["search_pages"]
+    print(f"[fetch_kousei] === bureau: {args.bureau} ({cfg['name']}) ===")
+
     audits = fetch()
 
     success = sum(1 for a in audits if a["status"] == "success")

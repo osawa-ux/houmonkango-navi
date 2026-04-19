@@ -16,31 +16,53 @@ mhlw:
   output_dir: "data_sources/mhlw"
 
 kouseikyoku:
-  name: "関東信越厚生局"
-  base_url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/"
-  pages:
-    shitei_ichiran:
-      description: "指定訪問看護ステーションの指定一覧"
-      url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html"
-      fallback_urls:
-        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/shinsei/shitei/houmonkango.html"
-        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/"
-    todokede:
-      description: "訪問看護ステーションの基準の届出受理状況"
-      url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html"
-  target_prefectures:
-    - "茨城県"
-    - "栃木県"
-    - "群馬県"
-    - "埼玉県"
-    - "千葉県"
-    - "東京都"
-    - "神奈川県"
-    - "新潟県"
-    - "山梨県"
-    - "長野県"
-  mvp_prefecture: "神奈川県"
   output_dir: "data_sources/kouseikyoku"
+  bureaus:
+    kantoshinetsu:
+      name: "関東信越厚生局"
+      source_name: "kouseikyoku_kanto"
+      base_url: "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/"
+      search_pages:
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/chousa/houmon.html"
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/shinsei/shitei/houmonkango.html"
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/index.html"
+        - "https://kouseikyoku.mhlw.go.jp/kantoshinetsu/gyomu/gyomu/hoken_kikan/shitei_jokyo.html"
+      target_prefectures:
+        - "茨城県"
+        - "栃木県"
+        - "群馬県"
+        - "埼玉県"
+        - "千葉県"
+        - "東京都"
+        - "神奈川県"
+        - "新潟県"
+        - "山梨県"
+        - "長野県"
+      mvp_prefecture: "神奈川県"
+      # ファイル名パターン (parse 時の glob)
+      excel_file_patterns:
+        todokede: "raw_{pref_code}*届出*{pref_jp}*.xlsx"
+        shitei: "raw_{pref_code}*コード*{pref_jp}*.xlsx"
+    kinki:
+      name: "近畿厚生局"
+      source_name: "kouseikyoku_kinki"
+      base_url: "https://kouseikyoku.mhlw.go.jp/kinki/"
+      search_pages:
+        - "https://kouseikyoku.mhlw.go.jp/kinki/gyomu/gyomu/hoken_kikan/shitei_jokyo_00005.html"
+        - "https://kouseikyoku.mhlw.go.jp/kinki/gyomu/gyomu/hoken_kikan/kijun_jurijoukyou.html"
+      target_prefectures:
+        - "福井県"
+        - "滋賀県"
+        - "京都府"
+        - "大阪府"
+        - "兵庫県"
+        - "奈良県"
+        - "和歌山県"
+      mvp_prefecture: "福井県"
+      # 近畿は s2026.4_houkankijun_{romaji}.xlsx パターン (要 fetch 後の実物確認で確定)
+      excel_file_patterns:
+        todokede: "raw_*houkankijun*{pref_romaji}*.xlsx"
+        shitei: "raw_*houkan_{pref_romaji}*.xlsx"
 
 # 将来拡張用
 google_places:

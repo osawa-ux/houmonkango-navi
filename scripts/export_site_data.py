@@ -10,6 +10,8 @@
 - data_sources/exports/kanagawa_source_summary.md (サマリレポート)
 """
 
+import argparse
+import sys
 import pandas as pd
 import json
 import os
@@ -19,6 +21,8 @@ from collections import defaultdict
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROCESSED_DIR = os.path.join(BASE_DIR, "data_sources", "processed")
 EXPORTS_DIR = os.path.join(BASE_DIR, "data_sources", "exports")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pref_meta import get_pref_meta
 
 # 出力に含めるカラム（内部キーは除外）
 MASTER_COLUMNS = [
@@ -44,22 +48,22 @@ SITE_COLUMNS = [
 ]
 
 
-def load_merged() -> pd.DataFrame:
-    path = os.path.join(PROCESSED_DIR, "stations_merged.csv")
+def load_merged(pref_romaji: str) -> pd.DataFrame:
+    path = os.path.join(PROCESSED_DIR, f"stations_merged_{pref_romaji}.csv")
     return pd.read_csv(path, encoding="utf-8-sig", dtype=str)
 
 
-def export_master_csv(df: pd.DataFrame):
+def export_master_csv(df: pd.DataFrame, pref_romaji: str):
     """マスターCSV出力"""
     cols = [c for c in MASTER_COLUMNS + FEATURE_COLUMNS if c in df.columns]
     output = df[cols].copy()
-    path = os.path.join(EXPORTS_DIR, "kanagawa_stations_master.csv")
+    path = os.path.join(EXPORTS_DIR, f"stations_master_{pref_romaji}.csv")
     output.to_csv(path, index=False, encoding="utf-8-sig")
     print(f"[export] CSV: {path} ({len(output):,}件)")
     return path
 
 
-def export_master_json(df: pd.DataFrame):
+def export_master_json(df: pd.DataFrame, pref_romaji: str):
     """マスターJSON出力"""
     cols = [c for c in MASTER_COLUMNS + FEATURE_COLUMNS if c in df.columns]
     records = df[cols].to_dict(orient="records")
@@ -70,14 +74,14 @@ def export_master_json(df: pd.DataFrame):
                 r[k] = None
             elif v == "nan" or v == "None":
                 r[k] = None
-    path = os.path.join(EXPORTS_DIR, "kanagawa_stations_master.json")
+    path = os.path.join(EXPORTS_DIR, f"stations_master_{pref_romaji}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     print(f"[export] JSON: {path} ({len(records):,}件)")
     return path
 
 
-def export_site_json(df: pd.DataFrame):
+def export_site_json(df: pd.DataFrame, pref_romaji: str):
     """サイト表示用の軽量JSON出力"""
     cols = [c for c in SITE_COLUMNS if c in df.columns]
     records = df[cols].to_dict(orient="records")
@@ -95,14 +99,14 @@ def export_site_json(df: pd.DataFrame):
                 except (ValueError, TypeError):
                     r[geo] = None
 
-    path = os.path.join(EXPORTS_DIR, "kanagawa_all.json")
+    path = os.path.join(EXPORTS_DIR, f"stations_all_{pref_romaji}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     print(f"[export] サイト用JSON: {path} ({len(records):,}件)")
     return path
 
 
-def export_city_index(df: pd.DataFrame):
+def export_city_index(df: pd.DataFrame, pref_jp: str, pref_romaji: str):
     """市区町村インデックス"""
     city_data = defaultdict(lambda: {"count": 0, "stations": []})
 
@@ -112,20 +116,20 @@ def export_city_index(df: pd.DataFrame):
         city_data[city]["stations"].append(str(row.get("station_id", "")))
 
     index = {
-        "prefecture": "神奈川県",
+        "prefecture": pref_jp,
         "total_count": len(df),
         "city_count": len(city_data),
         "cities": dict(sorted(city_data.items(), key=lambda x: -x[1]["count"])),
     }
 
-    path = os.path.join(EXPORTS_DIR, "city_index.json")
+    path = os.path.join(EXPORTS_DIR, f"city_index_{pref_romaji}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
     print(f"[export] 市区町村インデックス: {path} ({len(city_data)}市区町村)")
     return path
 
 
-def export_summary(df: pd.DataFrame, review_count: int):
+def export_summary(df: pd.DataFrame, review_count: int, pref_jp: str, pref_romaji: str):
     """ソースサマリレポート（Markdown）"""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     total = len(df)
@@ -141,7 +145,7 @@ def export_summary(df: pd.DataFrame, review_count: int):
     # 市区町村別件数
     city_counts = df["city"].value_counts().head(15) if "city" in df.columns else pd.Series()
 
-    content = f"""# 神奈川県 訪問看護ステーション データサマリ
+    content = f"""# {pref_jp} 訪問看護ステーション データサマリ
 
 生成日時: {now}
 
@@ -194,23 +198,24 @@ def export_summary(df: pd.DataFrame, review_count: int):
 - 市区町村別ページ生成
 """
 
-    path = os.path.join(EXPORTS_DIR, "kanagawa_source_summary.md")
+    path = os.path.join(EXPORTS_DIR, f"source_summary_{pref_romaji}.md")
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
     print(f"[export] サマリ: {path}")
     return path
 
 
-def process():
+def process(target_pref: str = "神奈川県"):
     """エクスポート処理"""
+    pref_romaji = get_pref_meta(target_pref)["romaji"]
     os.makedirs(EXPORTS_DIR, exist_ok=True)
-    print("[export] === エクスポート開始 ===")
+    print(f"[export] === エクスポート開始 (pref={target_pref}) ===")
 
-    df = load_merged()
+    df = load_merged(pref_romaji)
     print(f"[export] 入力: {len(df):,}件")
 
     # 要確認候補の件数を読み取る
-    review_path = os.path.join(EXPORTS_DIR, "kanagawa_review_candidates.csv")
+    review_path = os.path.join(EXPORTS_DIR, f"review_candidates_{pref_romaji}.csv")
     review_count = 0
     if os.path.exists(review_path):
         try:
@@ -219,18 +224,21 @@ def process():
         except Exception:
             review_count = 0
 
-    export_master_csv(df)
-    export_master_json(df)
-    export_site_json(df)
-    export_city_index(df)
-    export_summary(df, review_count)
+    export_master_csv(df, pref_romaji)
+    export_master_json(df, pref_romaji)
+    export_site_json(df, pref_romaji)
+    export_city_index(df, target_pref, pref_romaji)
+    export_summary(df, review_count, target_pref, pref_romaji)
 
     print(f"\n[export] === 完了 ===")
     print(f"[export] 出力先: {EXPORTS_DIR}")
 
 
 def main():
-    process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pref", default="神奈川県", help="対象都道府県名 (例: 福井県)")
+    args = parser.parse_args()
+    process(target_pref=args.pref)
 
 
 if __name__ == "__main__":

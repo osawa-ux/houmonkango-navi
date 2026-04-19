@@ -2,9 +2,15 @@
 厚労省CSVデータの正規化
 
 入力: data_sources/mhlw/raw_jigyosho_130.csv
-出力: data_sources/processed/mhlw_normalized.csv (神奈川県分)
+出力: data_sources/processed/mhlw_normalized_{pref_romaji}.csv
+
+CLI:
+  python normalize_stations.py                  # default: 神奈川県
+  python normalize_stations.py --pref 福井県
 """
 
+import argparse
+import sys
 import pandas as pd
 import unicodedata
 import re
@@ -15,6 +21,8 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INPUT_PATH = os.path.join(BASE_DIR, "data_sources", "mhlw", "raw_jigyosho_130.csv")
 OUTPUT_DIR = os.path.join(BASE_DIR, "data_sources", "processed")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pref_meta import get_pref_meta
 
 TARGET_PREFECTURE = "神奈川県"
 
@@ -212,9 +220,10 @@ def process(target_pref: str = TARGET_PREFECTURE) -> dict:
     for city, count in city_counts.items():
         print(f"  {city}: {count}件")
 
-    # 保存
+    # 保存（pref_romaji でファイル名分離）
+    pref_romaji = get_pref_meta(target_pref)["romaji"]
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    output_csv = os.path.join(OUTPUT_DIR, "mhlw_normalized.csv")
+    output_csv = os.path.join(OUTPUT_DIR, f"mhlw_normalized_{pref_romaji}.csv")
     result_df.to_csv(output_csv, index=False, encoding="utf-8-sig")
     print(f"\n[normalize] 出力: {output_csv} ({len(result_df):,}件)")
 
@@ -227,7 +236,10 @@ def process(target_pref: str = TARGET_PREFECTURE) -> dict:
 
 
 def main():
-    result = process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pref", default=TARGET_PREFECTURE, help="対象都道府県名 (例: 福井県)")
+    args = parser.parse_args()
+    result = process(target_pref=args.pref)
     print(f"\n[normalize] 完了: {result['output_count']:,}件出力")
 
 

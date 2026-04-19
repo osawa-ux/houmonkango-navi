@@ -16,6 +16,8 @@
 4. fuzzy候補 → review_candidates（自動統合しない）
 """
 
+import argparse
+import sys
 import pandas as pd
 import os
 import json
@@ -24,11 +26,13 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROCESSED_DIR = os.path.join(BASE_DIR, "data_sources", "processed")
 EXPORTS_DIR = os.path.join(BASE_DIR, "data_sources", "exports")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pref_meta import get_pref_meta
 
 
-def load_master() -> pd.DataFrame:
+def load_master(pref_romaji: str) -> pd.DataFrame:
     """正規化済みMHLWデータを読み込み"""
-    path = os.path.join(PROCESSED_DIR, "mhlw_normalized.csv")
+    path = os.path.join(PROCESSED_DIR, f"mhlw_normalized_{pref_romaji}.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(f"母集団データなし: {path}")
     df = pd.read_csv(path, encoding="utf-8-sig", dtype=str)
@@ -40,11 +44,11 @@ def load_master() -> pd.DataFrame:
     return df
 
 
-def load_features() -> pd.DataFrame:
+def load_features(pref_romaji: str) -> pd.DataFrame:
     """厚生局featureデータを読み込み"""
-    path = os.path.join(PROCESSED_DIR, "kouseikyoku_features.csv")
+    path = os.path.join(PROCESSED_DIR, f"kouseikyoku_features_{pref_romaji}.csv")
     if not os.path.exists(path):
-        print("[merge] 厚生局featureデータなし。母集団のみで出力します。")
+        print(f"[merge] 厚生局featureデータなし ({path})。母集団のみで出力します。")
         return pd.DataFrame()
     df = pd.read_csv(path, encoding="utf-8-sig", dtype=str)
     return df
@@ -176,13 +180,14 @@ def find_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(candidates)
 
 
-def process() -> dict:
+def process(target_pref: str = "神奈川県") -> dict:
     """統合処理のメインフロー"""
-    print("[merge] === データ統合開始 ===")
+    pref_romaji = get_pref_meta(target_pref)["romaji"]
+    print(f"[merge] === データ統合開始 (pref={target_pref}) ===")
 
     # 読み込み
-    master = load_master()
-    features = load_features()
+    master = load_master(pref_romaji)
+    features = load_features(pref_romaji)
     print(f"[merge] 母集団: {len(master):,}件")
     print(f"[merge] feature: {len(features):,}件")
 
@@ -201,13 +206,13 @@ def process() -> dict:
     # 出力
     os.makedirs(EXPORTS_DIR, exist_ok=True)
 
-    # 統合データ
-    merged_path = os.path.join(PROCESSED_DIR, "stations_merged.csv")
+    # 統合データ（pref_romaji でファイル名分離）
+    merged_path = os.path.join(PROCESSED_DIR, f"stations_merged_{pref_romaji}.csv")
     merged.to_csv(merged_path, index=False, encoding="utf-8-sig")
     print(f"[merge] 統合データ出力: {merged_path} ({len(merged):,}件)")
 
     # 要確認候補
-    review_path = os.path.join(EXPORTS_DIR, "kanagawa_review_candidates.csv")
+    review_path = os.path.join(EXPORTS_DIR, f"review_candidates_{pref_romaji}.csv")
     review_all.to_csv(review_path, index=False, encoding="utf-8-sig")
     print(f"[merge] 要確認候補: {review_path} ({len(review_all):,}件)")
 
@@ -230,7 +235,10 @@ def process() -> dict:
 
 
 def main():
-    result = process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pref", default="神奈川県", help="対象都道府県名 (例: 福井県)")
+    args = parser.parse_args()
+    result = process(target_pref=args.pref)
     print(f"\n[merge] 完了: {result['merged_count']:,}件統合")
 
 
