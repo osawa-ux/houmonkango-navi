@@ -63,6 +63,27 @@ kouseikyoku:
       excel_file_patterns:
         todokede: "raw_*houkankijun*{pref_romaji}*.xlsx"
         shitei: "raw_*houkan_{pref_romaji}*.xlsx"
+    tokaihokuriku:
+      name: "東海北陸厚生局"
+      source_name: "kouseikyoku_tokaihokuriku"
+      base_url: "https://kouseikyoku.mhlw.go.jp/tokaihokuriku/"
+      search_pages:
+        - "https://kouseikyoku.mhlw.go.jp/tokaihokuriku/newpage_00245.html"
+        - "https://kouseikyoku.mhlw.go.jp/tokaihokuriku/iryo_shido/houmon/r6_houmonkango_kijyun_00001.html"
+      target_prefectures:
+        - "富山県"
+        - "石川県"
+        - "岐阜県"
+        - "静岡県"
+        - "愛知県"
+        - "三重県"
+      mvp_prefecture: "石川県"
+      # 命名: raw_2604（{県名}）届出受理指定訪問看護事業所名簿.xlsx
+      # 命名: raw_2604（{県名}）コード内容別訪問看護事業者一覧.xlsx
+      # 関東信越と同フォーマット（pref_code prefix の代わりに「2604」年月）
+      excel_file_patterns:
+        todokede: "raw_*{pref_jp}*届出*.xlsx"
+        shitei: "raw_*{pref_jp}*コード*.xlsx"
 
 # 将来拡張用
 google_places:
