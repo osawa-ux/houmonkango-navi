@@ -28,6 +28,8 @@ vault path: `C:\Users\Motoi\R8.4 Obsidian`
 
 ### 保存の扱い
 
-- 自動で Obsidian に追記しない
-- 保存すべきと判断したら **保存候補として提案する**（タイトル案・配置先案・要約の3点）
-- ユーザーの明示指示があったときだけ Obsidian に追記する
+- **一次保存は自動で可**: `10_Daily/YYYY-MM-DD.md` / `00_Inbox/`（kango専用 Project index は未作成、必要になったら `20_Projects/kango/` に新設）
+- **恒久保存は明示指示または月次レビュー時のみ**: `70_SOP/` / `30_Areas/` / `50_Research/` / Project index の恒久要約欄
+- 自動保存は 3〜6行の短い要約（何をした / 何が決まった / 次の宿題）
+- 作業完了時は最後に「追記先 + 要約」または「保存判断 + 理由」を1行報告
+- 詳細は Vault の `_Vault運用方針.md` 末尾「Claude Code による自動記録ルール」参照
