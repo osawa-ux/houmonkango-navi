@@ -14,6 +14,32 @@ domain: 訪問看護ステーション検索ポータル
 
 ---
 
+## 上位原則
+本repoは Obsidian の `30_Areas/開発運用原則.md` を上位原則として参照する。
+repo固有ルールはこの CLAUDE.md に限定し、原則全文は複製しない。
+
+## 量産原則上の位置付け
+本repoは clinic（houmonshinsatsu-navi）の同型量産の2番目にあたる。
+
+- MyPython/build_site.py を共通基盤として利用する
+- kango専用のscriptsはあくまで差分（神奈川rich pipeline等）
+- 実装方針に迷ったら、まず「clinicで既にやっているか」を先に確認する
+- kango独自ロジックを足すときは、shika/care/welfareへ横展開可能な形を優先する
+- 差分はできるだけ設定ファイル・テンプレート・データで吸収する
+
+## API優先
+- データソースは厚労省CSV直変換（構造化データ）を基本とする
+- スクレイピングやPlaywrightは、API/CSVで完結しないときの第二選択
+- 採用理由はscript内コメントに残す
+
+## ビルド後チェック
+build後、デプロイ前にPlaywright等で以下を機械チェックする。
+- 代表ページ（トップ / 都道府県 / 市区町村 / 個別）が開く・console error無し
+- 検索JSON件数と個別HTML数の整合
+- 主要内部リンクが生きているか
+
+---
+
 ## Obsidian 連携の最小ルール
 
 共通方針: `~/.claude/CLAUDE.md`（グローバル）と Obsidian Vault の `_Vault運用方針.md` を参照。
