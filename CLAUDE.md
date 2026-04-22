@@ -18,6 +18,16 @@ domain: 訪問看護ステーション検索ポータル
 本repoは Obsidian の `30_Areas/開発運用原則.md` を上位原則として参照する。
 repo固有ルールはこの CLAUDE.md に限定し、原則全文は複製しない。
 
+## 能力カタログ連携
+
+再利用可能な機能・外部サービス連携・自動化手順を **新規実装・拡張・廃止** したら、
+Obsidian Vault の `30_Areas/能力カタログ.md` を更新する（必須）。
+
+- 粒度は「1動詞+1目的語」（例: 「神奈川rich pipelineで訪問看護ステーション特徴を抽出できる」）
+- 各能力に最低限: **状態 / 実行レベル / 前提条件 / entrypoint**
+- 既存能力で実現可能な依頼は、再実装せずカタログ記載の entrypoint を呼ぶ
+- clinic（houmonshinsatsu-navi / MyPython）と共通化できる能力は、先に共通側を更新する
+
 ## 量産原則上の位置付け
 本repoは clinic（houmonshinsatsu-navi）の同型量産の2番目にあたる。
 
