@@ -73,3 +73,11 @@ vault path: 動的解決 — `python ~/.claude/skills/_shared/resolve_vault.py` 
 - 月次レビューは補助（日々の取りこぼし棚卸し・昇格・Archive 判断）
 - 作業完了時は「追記先 + 要約 + 日次レビュー判断」または「保存判断 + 理由」を簡潔に報告
 - 詳細は Vault の `_Vault運用方針.md` 末尾「Claude Code による自動記録ルール」参照
+
+---
+
+## docs 構成（decisions / design / runbooks）
+
+決定の正本は `docs/decisions/`（連番 MADR・不変・supersede 更新）。設計 living doc は `docs/design/`。運用手順は `docs/runbooks/`。
+
+運用ルール正本: vault `70_SOP/product-docs-adr.md`
