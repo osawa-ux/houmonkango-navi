@@ -20,7 +20,7 @@
 
         var shown = 0;
         cards.forEach(function(card) {
-            var text = card.textContent.toLowerCase();
+            var text = (card.dataset.search || card.textContent).toLowerCase();
             var textMatch = !q || text.includes(q);
             var filterMatch = true;
             for (var key in filters) {
