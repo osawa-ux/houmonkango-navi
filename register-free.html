@@ -175,7 +175,7 @@
       </div>
       <h3 style="font-size:16px;margin-bottom:16px;">修正・追加内容をご記入ください</h3>
 
-      <form action="#" method="POST" id="editForm" data-api="https://houmon-kango-members.vercel.app/api/registration">
+      <form action="#" method="POST" id="editForm" data-api="https://zaitaku-members.vercel.app/api/registration">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
         <input type="hidden" name="type" value="existing_update">
         <input type="hidden" name="kikan_cd" id="hidden-kikan-cd" value="">
@@ -307,7 +307,7 @@
     <h2 style="font-size:20px;color:#2a5a8c;margin-bottom:16px;">新規掲載のお申し込み</h2>
     <div style="background:white;border-radius:10px;padding:24px;box-shadow:0 2px 6px rgba(0,0,0,0.08);">
 
-      <form action="#" method="POST" id="newForm" data-api="https://houmon-kango-members.vercel.app/api/registration">
+      <form action="#" method="POST" id="newForm" data-api="https://zaitaku-members.vercel.app/api/registration">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
         <input type="hidden" name="type" value="new_registration">
 
@@ -745,7 +745,7 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
   window.clearSelection = clearSelection;
 
   // --- Form submit: Supabase API 経由で保存 ---
-  var API_URL = 'https://houmon-kango-members.vercel.app/api/registration';
+  var API_URL = 'https://zaitaku-members.vercel.app/api/registration';
 
   function collectFormData(form, requestType) {
     var fd = new FormData(form);

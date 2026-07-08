@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  var ENDPOINT = 'https://houmon-kango-members.vercel.app/api/analytics/event';
+  var ENDPOINT = 'https://zaitaku-members.vercel.app/api/analytics/event';
   var _lastSent = {};  // dedup: "clinicId:eventType" -> timestamp
 
   // <meta name="zm-clinic-id"> から clinic_id を取得
