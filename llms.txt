@@ -4,19 +4,19 @@
 
 ## 主要ページ
 
-- [トップページ](https://kango.zaitaku-navi.com/): 都道府県から訪問診療クリニックを検索
-- [都道府県別一覧](https://kango.zaitaku-navi.com/sitemap-html.html): 47 都道府県・市区町村別のクリニック一覧
-- [在宅医療ガイド](https://kango.zaitaku-navi.com/guide/): 訪問診療の費用・対象者・始め方などの解説記事
-- [ブログ](https://kango.zaitaku-navi.com/blog/): 在宅医療に関する情報発信
+- [トップページ](https://zaitaku-navi.com/kango/): 都道府県から訪問診療クリニックを検索
+- [都道府県別一覧](https://zaitaku-navi.com/kango/sitemap-html.html): 47 都道府県・市区町村別のクリニック一覧
+- [在宅医療ガイド](https://zaitaku-navi.com/kango/guide/): 訪問診療の費用・対象者・始め方などの解説記事
+- [ブログ](https://zaitaku-navi.com/kango/blog/): 在宅医療に関する情報発信
 
 ## 医療機関の方へ
 
-- [掲載案内](https://kango.zaitaku-navi.com/for-clinics.html): 医療機関向けの掲載概要
-- [掲載プラン](https://kango.zaitaku-navi.com/premium.html): フリー / スタンダード / プレミアムの各プラン
-- [無料掲載申込・掲載情報の修正](https://kango.zaitaku-navi.com/register-free.html)
+- [掲載案内](https://zaitaku-navi.com/kango/for-clinics.html): 医療機関向けの掲載概要
+- [掲載プラン](https://zaitaku-navi.com/kango/premium.html): フリー / スタンダード / プレミアムの各プラン
+- [無料掲載申込・掲載情報の修正](https://zaitaku-navi.com/kango/register-free.html)
 
 ## 運営情報
 
-- [運営者情報](https://kango.zaitaku-navi.com/about.html)
-- [編集方針](https://kango.zaitaku-navi.com/editorial-policy.html): 掲載順位は中立（広告枠は明示表示）
-- [お問い合わせ](https://kango.zaitaku-navi.com/contact.html)
+- [運営者情報](https://zaitaku-navi.com/kango/about.html)
+- [編集方針](https://zaitaku-navi.com/kango/editorial-policy.html): 掲載順位は中立（広告枠は明示表示）
+- [お問い合わせ](https://zaitaku-navi.com/kango/contact.html)

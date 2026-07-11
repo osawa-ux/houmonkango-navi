@@ -28,18 +28,16 @@
       source_page: sourcePage || window.location.pathname,
       metadata: metadata || {}
     });
+    // 旧beacon型送信APIは仕様上常に credentials（cookie）込みで送信され opt-out 不可のため、
+    // credentialed CORS 非対応の analytics API では preflight で block される。fetch + credentials:'omit' に一本化。
     try {
-      if (navigator.sendBeacon) {
-        var blob = new Blob([payload], {type: 'application/json'});
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: payload,
-          keepalive: true
-        }).catch(function(){});
-      }
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: payload,
+        credentials: 'omit',
+        keepalive: true
+      }).catch(function(){});
     } catch(e) {}
   }
 
