@@ -467,7 +467,7 @@
 
 <script>
 (function(){
-  var masterUrl = '/data/area_master.json';
+  var masterUrl = '/kango/data/area_master.json';
   var masterData = null;
 
   // picker インスタンスを id で管理（複数 picker の連携に使う）
@@ -690,7 +690,7 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
         listDiv.innerHTML = '<p style="color:#666;font-size:14px;line-height:1.8;">掲載が見つかりませんでした。<br>' +
           '<span style="font-size:13px;color:#888;">ステーション名の一部のみで検索してみてください。</span><br>' +
           '<a href="#" id="switch-to-new-link" style="color:#2a5a8c;">新規掲載のお申し込みはこちら</a>' +
-          '　<a href="/contact-clinic.html" style="color:#888;font-size:13px;">お問い合わせ</a></p>';
+          '　<a href="/kango/contact-clinic.html" style="color:#888;font-size:13px;">お問い合わせ</a></p>';
         var switchLink = document.getElementById('switch-to-new-link');
         if (switchLink) { switchLink.addEventListener('click', function(e) { e.preventDefault(); showSection('new'); }); }
         return;
@@ -819,7 +819,10 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
       // 都道府県別 search JSON をその2桁で引く（loadClinics という全県一括ローダは
       // 存在せず ReferenceError で重複チェックが「確認中...」のまま止まっていた）。
       loadClinicsByPref(val.slice(0, 2), function(clinics) {
-        var found = clinics.find(function(c) { return c.ocd === val; });
+        // ocd（公式10桁コード）はデータ未整備（現状0件）。kango は id 自体が公式コード
+        // のため id もフォールバック比較する。clinic の id は内部キーで一致しないことが
+        // あるため、「見つからない＝未掲載」とは断定しない（重複の最終確認は事務局側）。
+        var found = clinics.find(function(c) { return c.ocd === val || c.id === val; });
         if (found) {
           kikanCheck.innerHTML = '<span style="color:#c00;">この医療機関番号は既に掲載されています: ' + escHtml(found.n) + '</span><br>' +
             '<span style="font-size:12px;color:#888;">掲載情報の修正は「<a href="#" id="switch-existing-link" style="color:#2a5a8c;">既に掲載されている医療機関の方</a>」からお手続きください。</span>';
@@ -827,7 +830,7 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
           var link = document.getElementById('switch-existing-link');
           if (link) { link.addEventListener('click', function(e) { e.preventDefault(); showSection('existing'); }); }
         } else {
-          kikanCheck.innerHTML = '<span style="color:#1a6e3c;">この医療機関番号は未掲載です。新規登録できます。</span>';
+          kikanCheck.innerHTML = '<span style="color:#888;">この番号での掲載は確認できませんでした。重複の有無は事務局で確認しますので、そのままお申し込みいただけます。</span>';
           kikanDuplicate = false;
         }
       });
