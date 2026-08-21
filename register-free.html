@@ -284,9 +284,12 @@
 
         <!-- 6. 特徴・強み -->
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-weight:bold;margin-bottom:4px;">特徴・強み <span style="font-weight:normal;color:#999;font-size:13px;">任意・80字以内</span></label>
-          <input type="text" name="feature" maxlength="80" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:15px;" placeholder="例: 緩和ケアと看取り対応に力を入れています">
-          <p style="font-size:12px;color:#888;margin-top:4px;">一覧ページのステーション名の下に表示されます。</p>
+          <label for="feature-edit" style="display:block;font-weight:bold;margin-bottom:4px;">特徴・強み <span style="font-weight:normal;color:#999;font-size:13px;">任意・80字以内</span></label>
+          <textarea id="feature-edit" name="feature" maxlength="80" rows="3" aria-describedby="feature-count-edit" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:15px;line-height:1.6;resize:vertical;" placeholder="例: 緩和ケアと看取り対応に力を入れています"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:4px;">
+            <p style="font-size:12px;color:#888;margin:0;">一覧ページのステーション名の下に表示されます。</p>
+            <span id="feature-count-edit" aria-live="polite" style="font-size:12px;color:#888;white-space:nowrap;">0 / 80</span>
+          </div>
         </div>
 
         <!-- 7. その他修正内容 -->
@@ -443,9 +446,12 @@
 
         <!-- 8. 特徴・強み -->
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-weight:bold;margin-bottom:4px;">特徴・強み <span style="font-weight:normal;color:#999;font-size:13px;">任意・80字以内</span></label>
-          <input type="text" name="feature" maxlength="80" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:15px;" placeholder="例: 神経難病や医療依存度の高い患者さんにも対応しています">
-          <p style="font-size:12px;color:#888;margin-top:4px;">一覧ページのステーション名の下に表示されます。</p>
+          <label for="feature-new" style="display:block;font-weight:bold;margin-bottom:4px;">特徴・強み <span style="font-weight:normal;color:#999;font-size:13px;">任意・80字以内</span></label>
+          <textarea id="feature-new" name="feature" maxlength="80" rows="3" aria-describedby="feature-count-new" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:15px;line-height:1.6;resize:vertical;" placeholder="例: 神経難病や医療依存度の高い患者さんにも対応しています"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:4px;">
+            <p style="font-size:12px;color:#888;margin:0;">一覧ページのステーション名の下に表示されます。</p>
+            <span id="feature-count-new" aria-live="polite" style="font-size:12px;color:#888;white-space:nowrap;">0 / 80</span>
+          </div>
         </div>
 
         <!-- 9. その他 -->
@@ -453,6 +459,24 @@
           <label style="display:block;font-weight:bold;margin-bottom:4px;color:#666;">その他 <span style="font-weight:normal;color:#999;font-size:13px;">任意</span></label>
           <p style="font-size:12px;color:#888;margin-bottom:4px;">保険医療機関コードがわからない場合や、その他ご連絡事項があればこちらにご記入ください。</p>
           <textarea name="note" rows="2" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;" placeholder="例: 医療機関番号がわかりません / 開業準備中です"></textarea>
+        </div>
+
+        <!-- 10. 事業者区分（特商法26条1項1号の適用除外の前提「相手方が事業者であること」の取得） -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-weight:bold;margin-bottom:8px;">事業者区分 <span style="color:#c00;">*</span></label>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;">
+            <label style="font-size:14px;cursor:pointer;"><input type="radio" name="business_type" value="corporation" required style="margin-right:6px;">法人</label>
+            <label style="font-size:14px;cursor:pointer;"><input type="radio" name="business_type" value="sole_proprietor" required style="margin-right:6px;">個人事業主</label>
+          </div>
+        </div>
+
+        <!-- 11. 掲載規約への同意 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:14px;cursor:pointer;display:flex;align-items:flex-start;gap:8px;">
+            <input type="checkbox" id="terms-agree-new" required style="margin-top:3px;">
+            <span><a href="https://members.zaitakuclinic-navi.com/listing-terms" target="_blank" rel="noopener">医療機関向け掲載規約</a>を確認し、同意します <span style="color:#c00;">*</span></span>
+          </label>
+          <div id="consent-status-new" style="display:none;color:#c00;font-size:13px;margin-top:6px;"></div>
         </div>
 
         <p style="font-size:12px;color:#888;margin-bottom:12px;">ご入力いただいた個人情報は、掲載情報の整備および当サービスに関するご連絡のみに使用し、第三者に提供することはありません。<a href="/about.html">運営者情報</a></p>
@@ -496,9 +520,23 @@
 
     function loadMaster(cb) {
       if (masterData) return cb(masterData);
-      fetch(masterUrl).then(function(r){return r.json()}).then(function(d){
+      fetch(masterUrl).then(function(r){
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function(d){
         masterData = d;
         cb(d);
+      }).catch(function(){
+        // 旧実装は catch が無く、失敗すると無言でハングしていた（2026-08-09 障害）。
+        // 利用者に「読み込めなかった」ことを見せる。
+        if (prefSelect) {
+          prefSelect.innerHTML = '<option value="">地域データを読み込めませんでした</option>';
+          prefSelect.disabled = true;
+        }
+        if (cityList) {
+          cityList.innerHTML = '<p style="color:#c62828;font-size:13px;">' +
+            '地域データの読み込みに失敗しました。お手数ですが、ページを再読み込みしてください。</p>';
+        }
       });
     }
 
@@ -623,6 +661,72 @@
 </script>
 
 <script>
+(function(){
+  var FEATURE_MAX = 80;
+  // 文末が助詞 = 文が途中で切れている可能性が高い。
+  var DANGLING_TAIL = /(?:から|より|は|が|を|に|へ|で|と|の|や|も)$/;
+  // ただし体言止めとして自然に終わる語尾は除外する（先に判定する）。
+  // 「小児から高齢者まで」「がん緩和ケアから看取りまで」は完成した文であり毎回警告が出ると
+  // 偽陽性で運用が荒れる。**単に「まで」を DANGLING_TAIL から抜くだけでは効かない**
+  // ことに注意: 「まで」は末尾が「で」なので DANGLING_TAIL の「で」側でマッチしてしまう
+  // （2026-08-11 のブラウザ実機で、抜いただけの版がなお発火することを実測）。
+  var NATURAL_TAIL = /(?:まで|など|ほか|他|等)$/;
+
+  // 前後の空白と連続空白（textarea の改行を含む）を 1 個の半角空白へ潰す。
+  // 特徴文は一覧ページの 1 行表示に使うため、改行をそのまま送らない。
+  window.znNormalizeFeature = function(v) {
+    return String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+  };
+
+  // 「書き直したい」= true を返す（呼び出し側は送信を中止する）。
+  window.znFeatureNeedsRewrite = function(form) {
+    if (!form) return false;
+    // 1 フォームにつき最大 1 回しか止めない（fail-open）。
+    // confirm() はブラウザの「このページでこれ以上ダイアログを表示しない」が
+    // 効いている環境や sandbox 文脈では**ダイアログを出さず即 false を返す**。
+    // 毎回止める実装だと、その環境では送信ボタンを押しても何も起きず、
+    // 申込がサイレントに消失する（＝この警告が原因で B2B のリードを失う）。
+    // 2 回目以降は必ず素通りさせることでその失敗モードを閉じる。
+    if (form.dataset.znFeatureAsked === '1') return false;
+    var el = form.querySelector('[name="feature"]');
+    if (!el) return false;
+    var v = window.znNormalizeFeature(el.value);
+    if (!v || NATURAL_TAIL.test(v) || !DANGLING_TAIL.test(v)) return false;
+    form.dataset.znFeatureAsked = '1';
+    var ok = window.confirm(
+      '「特徴・強み」が「' + v.slice(-10) + '」で終わっており、文が途中の可能性があります。'
+      + 'このまま送信してよろしいですか？　書き直す場合は「キャンセル」を押してください。'
+    );
+    if (!ok) { try { el.focus(); } catch (e) {} return true; }
+    return false;
+  };
+
+  function wireCounter(fieldId, countId) {
+    var el = document.getElementById(fieldId);
+    var out = document.getElementById(countId);
+    if (!el || !out) return;
+    function render() {
+      var n = el.value.length;
+      out.textContent = n + ' / ' + FEATURE_MAX;
+      out.style.color = (n >= FEATURE_MAX) ? '#c0392b' : '#888';
+    }
+    el.addEventListener('input', render);
+    render();
+  }
+
+  function init() {
+    wireCounter('feature-edit', 'feature-count-edit');
+    wireCounter('feature-new', 'feature-count-new');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<script>
 initAreaPicker('area-picker-edit', 'visit_areas');
 initAreaPicker('area-picker-edit-consult', 'consult_areas', {visitPickerId: 'area-picker-edit'});
 initAreaPicker('area-picker-new', 'visit_areas');
@@ -663,7 +767,9 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
     fetch('/kango/data/search/' + prefCode + '.json')
       .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function(data) { clinicCache[prefCode] = data; cb(data); })
-      .catch(function() { cb([]); });
+      // 旧実装は cb([]) で「掲載が見つかりませんでした」と誤答していた（2026-08-09 障害）。
+      // 通信・取得の失敗は null を渡し、呼び出し側でエラー表示に分岐させる。
+      .catch(function() { cb(null); });
   }
 
   function searchClinics() {
@@ -678,6 +784,14 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
     listDiv.innerHTML = '<p style="color:#888;font-size:14px;">検索中...</p>';
     resultsDiv.style.display = 'block';
     loadClinicsByPref(pref, function(clinics) {
+      if (clinics === null) {
+        // 通信・データ取得の失敗。「該当なし」と誤って伝えない（2026-08-09 障害）。
+        listDiv.innerHTML = '<p style="color:#c62828;font-size:14px;line-height:1.8;">' +
+          'データの読み込みに失敗しました。<br>' +
+          '<span style="font-size:13px;color:#888;">お手数ですが、ページを再読み込みのうえ再度お試しください。' +
+          '解消しない場合は<a href="/kango/contact-clinic.html" style="color:#2a5a8c;">お問い合わせ</a>ください。</span></p>';
+        return;
+      }
       var filtered = clinics;
       if (query) {
         var q = query.toLowerCase();
@@ -766,6 +880,10 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
     // visit_areas / consult_areas は hidden input から直接取得（フォームのname属性で一致）
     obj.visit_areas = obj.visit_areas || '';
     obj.consult_areas = obj.consult_areas || '';
+    // 特徴文は textarea なので改行が入りうる。一覧ページは 1 行表示のため空白へ潰す。
+    if (obj.feature && window.znNormalizeFeature) {
+      obj.feature = window.znNormalizeFeature(obj.feature);
+    }
     return obj;
   }
 
@@ -773,6 +891,8 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
     if (!form) return;
     form.addEventListener('submit', function(e) {
       e.preventDefault();
+      // 特徴文が助詞止まり（文の途中）なら一度だけ確認する。ブロックはしない。
+      if (window.znFeatureNeedsRewrite && window.znFeatureNeedsRewrite(form)) return;
       var btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       btn.textContent = '送信中...';
@@ -819,9 +939,17 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
       // 都道府県別 search JSON をその2桁で引く（loadClinics という全県一括ローダは
       // 存在せず ReferenceError で重複チェックが「確認中...」のまま止まっていた）。
       loadClinicsByPref(val.slice(0, 2), function(clinics) {
-        // ocd（公式10桁コード）はデータ未整備（現状0件）。kango は id 自体が公式コード
-        // のため id もフォールバック比較する。clinic の id は内部キーで一致しないことが
-        // あるため、「見つからない＝未掲載」とは断定しない（重複の最終確認は事務局側）。
+        // ocd（保険医療機関コード）はデータ未整備（現状0件）。id もフォールバック比較するが、
+        // clinic の id は内部キー、kango の id は介護保険事業所番号（別体系）のため
+        // 真陽性はほぼ期待できない。真の重複判定は official_kikan_cd 投入後。
+        // よって「見つからない＝未掲載」とは断定しない（重複の最終確認は事務局側）。
+        if (clinics === null) {
+          // 取得失敗。重複チェックが行えなかったことを明示し、申し込みは妨げない
+          // （loadClinicsByPref が失敗時に null を返す・2026-08-09 障害の再発防止）。
+          kikanCheck.innerHTML = '<span style="color:#888;">掲載状況を確認できませんでした。重複の有無は事務局で確認しますので、そのままお申し込みいただけます。</span>';
+          kikanDuplicate = false;
+          return;
+        }
         var found = clinics.find(function(c) { return c.ocd === val || c.id === val; });
         if (found) {
           kikanCheck.innerHTML = '<span style="color:#c00;">この医療機関番号は既に掲載されています: ' + escHtml(found.n) + '</span><br>' +
@@ -842,14 +970,45 @@ initAreaPicker('area-picker-new-consult', 'consult_areas', {visitPickerId: 'area
   if (newForm) {
     newForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      // 事業者区分・掲載規約同意（migration 20260818083826 対応）。
+      // HTML の required 属性（ラジオ2つ＋チェックボックス）に加え、JS 側でも
+      // 明示チェックしてステータス表示する（既存の kikan-cd-check 等の
+      // インラインエラー表示様式に合わせる）。
+      var consentStatus = document.getElementById('consent-status-new');
+      var businessTypeChecked = newForm.querySelector('input[name="business_type"]:checked');
+      var termsCheckbox = document.getElementById('terms-agree-new');
+      if (!businessTypeChecked || !termsCheckbox || !termsCheckbox.checked) {
+        if (consentStatus) {
+          consentStatus.style.display = 'block';
+          consentStatus.textContent = !businessTypeChecked
+            ? '事業者区分を選択してください。'
+            : '掲載規約への同意が必要です。';
+        }
+        return;
+      }
+      if (consentStatus) { consentStatus.style.display = 'none'; }
       if (kikanDuplicate) {
         alert('この医療機関番号は既に掲載されています。掲載情報の修正は「既に掲載されている医療機関の方」からお手続きください。');
         return;
       }
+      // 特徴文が助詞止まり（文の途中）なら一度だけ確認する。ブロックはしない。
+      if (window.znFeatureNeedsRewrite && window.znFeatureNeedsRewrite(newForm)) return;
       var btn = newForm.querySelector('button[type="submit"]');
       btn.disabled = true;
       btn.textContent = '送信中...';
       var payload = collectFormData(newForm, 'new');
+      // terms_agreed はサーバー側で now() として同意日時を確定する
+      // （route.ts: body.terms_agreed === true の厳密真偽判定のため文字列でなく
+      // boolean を明示的に送る。collectFormData の汎用ループは FormData 値を
+      // 文字列としてコピーするため、ここで上書きする）。
+      payload.terms_agreed = true;
+      // terms_version はサーバー側が正本（zaitaku-members PR #306: /api/registration
+      // route.ts が terms_agreed=true かつ terms_version 未指定/空文字のとき自身の
+      // LISTING_TERMS_VERSION で確定する）。PR #306 が master へ merge されれば、
+      // このクライアント側の送信行は削除可（送らなくてもサーバ側で正しい版が
+      // 記録されるようになるため）。同時 merge されない可能性を考慮し、当面は
+      // 明示送信を残す（PR #306 merge 前はサーバ側フォールバックが無いため）。
+      payload.terms_version = '2026-08-18-1';
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

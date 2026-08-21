@@ -180,14 +180,34 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .clinic-card.hidden-by-filter { display: none; }
 
 /* 有料カード差分（スタンダード: 左ボーダー＋シャドウ） */
-.card--premium { border-left: 4px solid #2a5a8c; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.card--premium { border-left: 4px solid #2a5a8c; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
 .card--premium .clinic-name a { color: #2a5a8c; }
 .card--premium a[href*="contact"] { position: relative; z-index: 1; }
+/* スタンダード有料カード用の明示バッジ（2026-08-18・利用規約v3.3対応）。
+   有料掲載プラン契約の有無を表示順位の要素として用いていることの開示。
+   premium-plus-badge より控えめなトーン（掲載強化の開示であり品質保証ではない）。
+   2026-08-19 是正: font-size を 10px→12px（カード本文相当の約13pxに近づけ、
+   ステマ告示運用基準の「明瞭性」＝文字の大きさ・対比を満たしやすくするため）。 */
+.premium-badge {
+  display: inline-block;
+  background: #5b7fa6;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 0 0 6px 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
 
 /* プレミアムプラス強調カード（listing_plan=premium_plus）
    スタンダードより目立つ枠線・背景・上部リボン。
    PRバッジは .premium-plus-badge として別途カード冒頭に挿入される。
-   医療広告基準上、品質保証ではなく「掲載強化」であることをトーンで示す。 */
+   医療広告基準上、品質保証ではなく「掲載強化」であることをトーンで示す。
+   2026-08-19 是正: .premium-badge と同じ理由で font-size を 10px→12px。 */
 .card--premium-plus {
   border: 2px solid #2a5a8c;
   border-top: 4px solid #2a5a8c;
@@ -201,7 +221,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: inline-block;
   background: #2a5a8c;
   color: #fff;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: bold;
   padding: 3px 8px;
   border-radius: 0 0 6px 0;
